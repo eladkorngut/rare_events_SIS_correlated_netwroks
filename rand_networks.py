@@ -10,6 +10,7 @@ import matplotlib.cbook as cbook
 from itertools import combinations
 from itertools import zip_longest
 from itertools import chain
+from scipy.sparse.linalg import eigsh
 
 import numpy.random
 from scipy.stats import norm
@@ -899,31 +900,42 @@ def create_correlation(degrees, alpha):
     return degrees, final_pair_list
 
 def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,correlation_factor):
-    k_avg_graph = 0
+    k_avg_graph,correlation_graph = 0.0,2.0
+    high_correlation, low_correlation = 1.0, correlation_factor
+    mid_correlation = (low_correlation + high_correlation) / 2
+    correlation_norm = correlation_factor if correlation_factor!=0 else 2.0
     if N>1000:
-        while np.abs(kavg-k_avg_graph)/kavg>0.05:
+        while np.abs(kavg-k_avg_graph)/kavg>0.05 or np.abs(correlation_factor-correlation_graph)/correlation_norm>0.05:
             if net_type=='ig':
                 wald_mu, wald_lambda = kavg, kavg / epsilon ** 2
-                d = numpy.random.default_rng().wald(wald_mu,wald_lambda,N).astype(int)
+                d = np.ceil(numpy.random.default_rng().wald(wald_mu,wald_lambda,N)).astype(int)
             elif net_type=='bet':
                 alpha_beta_dist,beta_beta_dist = (N - kavg * (1 + epsilon ** 2)) / (N * epsilon ** 2),((kavg - N) * (kavg - N + kavg * epsilon ** 2)) / (kavg * N * epsilon ** 2)
-                d=(numpy.random.default_rng().beta(alpha_beta_dist,beta_beta_dist,N)*N).astype(int)
+                d=np.ceil(numpy.random.default_rng().beta(alpha_beta_dist,beta_beta_dist,N)*N).astype(int)
             elif net_type=='ln':
                 mu_log_norm,sigma_log_norm = -(1 / 2) * np.log((1 + epsilon ** 2) / kavg ** 2),np.sqrt(2 * np.log(kavg) + np.log((1 + epsilon ** 2) / kavg ** 2))
-                d = numpy.random.lognormal(mu_log_norm,sigma_log_norm,N).astype(int)
+                d = np.ceil(numpy.random.lognormal(mu_log_norm,sigma_log_norm,N)).astype(int)
             elif net_type=='gam':
                 theta, shape, k_avg_graph = epsilon ** 2 * kavg, 1 / epsilon ** 2, 0.0
-                d = numpy.random.default_rng().gamma(shape, theta, N).astype(int)
+                d = np.ceil(numpy.random.default_rng().gamma(shape, theta, N)).astype(int)
+            elif net_type=='h':
+                d = np.full(N, kavg).astype(int)
+            elif net_type=='bd':
+                d1, d2 = int(int(kavg) * (1 - float(epsilon))), int(int(kavg) * (1 + float(epsilon)))
+                combined_array = np.concatenate((np.full(N // 2, d1), np.full(N // 2, d2))).astype(int)
+                # Shuffle the array to randomize the order
+                d = np.random.shuffle(combined_array)
+            elif net_type=='exp':
+                d = np.ceil(np.random.exponential(kavg, N)).astype(int)
             # # Remove zeros from d
             # d = d[d != 0]
             # Replace zeros with ones
-            # d[d == 0] = 1
+            d[d == 0] = 1
             if np.sum(d)%2!=0:
                 d[int(len(d)*np.random.random())]+=1
 
             if correlation_factor!=0:
-                d, correlated_nodes = create_correlation(d, correlation_factor)
-
+                d, correlated_nodes = create_correlation(d, mid_correlation)
             G = nx.configuration_model(d)
             G = nx.Graph(G)
 
@@ -934,10 +946,17 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             G.remove_edges_from(nx.selfloop_edges(G))
             graph_degrees= np.array([G.degree(n) for n in G.nodes()])
             k_avg_graph = np.mean(graph_degrees)
+            correlation_graph = nx.degree_assortativity_coefficient(G) if net_type!='h' else correlation_norm
+
+            if correlation_graph < correlation_factor and correlation_factor!=0:
+                low_correlation = mid_correlation
+            else:
+                high_correlation = mid_correlation
+            mid_correlation = (high_correlation+low_correlation)/2
+
         return G,np.array([G.degree(n) for n in G.nodes()])
     G,kavg_graph = find_multi_k_binary_search(kavg,epsilon,N,net_type)
-    graph_degrees = np.array([G.degree(n) for n in G.nodes()])
-    return G,graph_degrees
+    return G
 
 
 def configuration_model_undirected_graph_gamma(kavg,epsilon,N):
@@ -984,6 +1003,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 20,0.4,10000,'gam',0.2
+    k,epsilon,N,net_type,correlation_factor= 40,2.0,10000,'gam',0.1
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     plot_gamma_distribution(G,k,epsilon,N,net_type)
