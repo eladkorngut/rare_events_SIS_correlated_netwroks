@@ -217,23 +217,23 @@ if __name__ == '__main__':
     N = 10000 # number of nodes
     lam = 1.3 # The reproduction number
     number_of_networks = 20
-    k = 40 # Average number of neighbors for each node
+    k = 20 # Average number of neighbors for each node
     x = 0.2 # intial infection percentage
-    correlation = 0.2
+    correlation = 0.01
     Num_inf = int(x*N) # Number of initially infected nodes
     Alpha = 1.0 # Recovery rate
     Beta_avg = Alpha * lam / k # Infection rate for each node
     error_graphs = False
-    prog = 'bd'
+    prog = 'gam'
 
     # Parameters for the WE method
-    sims = 1000 # Number of simulations at each bin
+    sims = 2500 # Number of simulations at each bin
     it = 70
     jump = 1
-    eps_din,eps_dout = 0.2,0.2 # The normalized std (second moment divided by the first) of the network
+    eps_din,eps_dout = 0.1,0.1 # The normalized std (second moment divided by the first) of the network
     a = 0.2
     relaxation_time  = 20
-    tau = 1.0
+    tau = 0.25
     new_trajcetory_bin = 2
 
     parameters = np.array([N,sims,it,k,x,lam,jump,Num_inf,Alpha,number_of_networks,tau,eps_din,eps_dout,new_trajcetory_bin,prog,Beta_avg,error_graphs,correlation])
