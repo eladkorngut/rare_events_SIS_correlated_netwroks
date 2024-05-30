@@ -192,13 +192,16 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs):
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
-            largest_eigenvalue = eigsh(nx.adjacency_matrix(G).astype(float), k=1, which='LA', return_eigenvectors=False)[0]
+            largest_eigenvalue,largest_eigen_vector = eigsh(nx.adjacency_matrix(G).astype(float), k=1, which='LA', return_eigenvectors=True)
             Beta = float(lam) / largest_eigenvalue
             graph_correlation = nx.degree_assortativity_coefficient(G)
+            rho = float((np.sum(largest_eigen_vector) / (N * np.sum(largest_eigen_vector ** 3))) * (Beta * largest_eigenvalue - 1))
             parameters = np.array(
                 [N, sims, it, k_avg_graph, x, lam, jump, Alpha, Beta, i, tau, Istar, new_trajcetory_bin, dir_path,
-                 prog, eps_graph, eps_graph, graph_std, graph_skewness, third_moment, second_moment,graph_correlation])
+                 prog, eps_graph, eps_graph, graph_std, graph_skewness, third_moment, second_moment,graph_correlation,rho])
         np.save('parameters_{}.npy'.format(i), parameters)
+        np.save('largest_eigen_vector_{}.npy'.format(i), largest_eigenvalue)
+        np.save('largest_eigenvalue_{}.npy'.format(i), largest_eigen_vector)
         infile = 'GNull_{}.pickle'.format(i)
         with open(infile,'wb') as f:
             pickle.dump(G,f,pickle.HIGHEST_PROTOCOL)
@@ -214,27 +217,28 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs):
 
 if __name__ == '__main__':
     # Parameters for the network
-    N = 10000 # number of nodes
-    lam = 1.3 # The reproduction number
-    number_of_networks = 20
+    N = 100000 # number of nodes
+    prog = 'gam'
+    lam = 1.2 # The reproduction number
+    eps_din,eps_dout = 1.0,1.0 # The normalized std (second moment divided by the first) of the network
+    correlation = 0.3
+    number_of_networks = 5
     k = 20 # Average number of neighbors for each node
+    error_graphs = False
+
+    # Parameters for the WE method
+    sims = 500 # Number of simulations at each bin
+    tau = 0.5
+    it = 70
+    jump = 1
+    new_trajcetory_bin = 2
+
+    # Parameter that don't get chagne
+    relaxation_time  = 20
     x = 0.2 # intial infection percentage
-    correlation = 0.01
     Num_inf = int(x*N) # Number of initially infected nodes
     Alpha = 1.0 # Recovery rate
     Beta_avg = Alpha * lam / k # Infection rate for each node
-    error_graphs = False
-    prog = 'gam'
-
-    # Parameters for the WE method
-    sims = 2500 # Number of simulations at each bin
-    it = 70
-    jump = 1
-    eps_din,eps_dout = 0.1,0.1 # The normalized std (second moment divided by the first) of the network
-    a = 0.2
-    relaxation_time  = 20
-    tau = 0.25
-    new_trajcetory_bin = 2
 
     parameters = np.array([N,sims,it,k,x,lam,jump,Num_inf,Alpha,number_of_networks,tau,eps_din,eps_dout,new_trajcetory_bin,prog,Beta_avg,error_graphs,correlation])
     graphname  = 'GNull'
