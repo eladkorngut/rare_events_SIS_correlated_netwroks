@@ -192,7 +192,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs):
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
-            largest_eigenvalue,largest_eigen_vector = eigsh(nx.adjacency_matrix(G).astype(float), k=1, which='LA', return_eigenvectors=True).astype(float)
+            largest_eigenvalue,largest_eigen_vector = eigsh(nx.adjacency_matrix(G).astype(float), k=1, which='LA', return_eigenvectors=True)
             Beta = float(lam) / largest_eigenvalue[0]
             graph_correlation = nx.degree_assortativity_coefficient(G)
             rho = (np.sum(largest_eigen_vector) / (N * np.sum(largest_eigen_vector ** 3))) * (Beta * largest_eigenvalue[0] - 1)
