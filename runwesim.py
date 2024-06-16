@@ -217,17 +217,17 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs):
 
 if __name__ == '__main__':
     # Parameters for the network
-    N = 100000 # number of nodes
-    prog = 'gam'
+    N = 1000 # number of nodes
+    prog = 'bd'
     lam = 1.2 # The reproduction number
-    eps_din,eps_dout = 1.0,1.0 # The normalized std (second moment divided by the first) of the network
-    correlation = 0.3
+    eps_din,eps_dout = 0.5,0.5 # The normalized std (second moment divided by the first) of the network
+    correlation = 0.01
     number_of_networks = 5
-    k = 20 # Average number of neighbors for each node
+    k = 100 # Average number of neighbors for each node
     error_graphs = False
 
     # Parameters for the WE method
-    sims = 500 # Number of simulations at each bin
+    sims = 1000 # Number of simulations at each bin
     tau = 0.5
     it = 70
     jump = 1
@@ -244,8 +244,8 @@ if __name__ == '__main__':
     graphname  = 'GNull'
     foldername = 'prog_{}_N{}_k_{}_R_{}_tau_{}_it_{}_jump_{}_new_trajcetory_bin_{}_sims_{}_net_{}_epsin_{}_epsout_{}_correlation_{}_err_{}'.format(
         prog, N, k, lam, tau, it, jump, new_trajcetory_bin, sims, number_of_networks, eps_din, eps_dout,correlation,error_graphs)
-    # y1star=(-2*eps_din*(1 + eps_dout*eps_din)+ lam*(-1 + eps_din)*(1 + (-1 + 2*eps_dout)*eps_din)+ np.sqrt(lam**2 +eps_din*(4*eps_din +lam**2*eps_din*(-2 +eps_din**2) +4*eps_dout*(lam -(-2 + lam)*eps_din**2) +4*eps_dout**2*eps_din*(lam -(-1 + lam)*eps_din**2))))/(4*lam*(-1 +eps_dout)*(-1 +eps_din)*eps_din)
-    # y2star=(lam + eps_din*(-2 + 2*lam +lam*eps_din+ 2*eps_dout*(lam +(-1 + lam)*eps_din)) -np.sqrt(lam**2 +eps_din*(4*eps_din +lam**2*eps_din*(-2 +eps_din**2) +4*eps_dout*(lam -(-2 + lam)*eps_din**2) +4*eps_dout**2*eps_din*(lam -(-1 + lam)*eps_din**2))))/(4*lam*(1 +eps_dout)*eps_din*(1 + eps_din))
+    y1star=(-2*eps_din*(1 + eps_dout*eps_din)+ lam*(-1 + eps_din)*(1 + (-1 + 2*eps_dout)*eps_din)+ np.sqrt(lam**2 +eps_din*(4*eps_din +lam**2*eps_din*(-2 +eps_din**2) +4*eps_dout*(lam -(-2 + lam)*eps_din**2) +4*eps_dout**2*eps_din*(lam -(-1 + lam)*eps_din**2))))/(4*lam*(-1 +eps_dout)*(-1 +eps_din)*eps_din)
+    y2star=(lam + eps_din*(-2 + 2*lam +lam*eps_din+ 2*eps_dout*(lam +(-1 + lam)*eps_din)) -np.sqrt(lam**2 +eps_din*(4*eps_din +lam**2*eps_din*(-2 +eps_din**2) +4*eps_dout*(lam -(-2 + lam)*eps_din**2) +4*eps_dout**2*eps_din*(lam -(-1 + lam)*eps_din**2))))/(4*lam*(1 +eps_dout)*eps_din*(1 + eps_din))
     # Istar = (y1star +y2star)*N
     Istar = (1 - 1/lam) * N
 
