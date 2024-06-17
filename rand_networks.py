@@ -289,7 +289,7 @@ def random_bimodal_assortative_graph(d1,d2, n, alpha,seed=None):
         d[stub_d1] = d1
         d[stub_d2] = d2
 
-        d, correlated_nodes = create_correlation(d, alpha)
+        d, correlated_nodes = create_correlation_bimodal(d, alpha)
         G.add_edges_from(correlated_nodes)
 
         # Create stubs list
@@ -298,6 +298,7 @@ def random_bimodal_assortative_graph(d1,d2, n, alpha,seed=None):
             stubs.extend([i] * d[i])
 
         edges = set()
+        edges.update(correlated_nodes)
 
         while stubs:
             potential_edges = defaultdict(lambda: 0)
@@ -1028,11 +1029,85 @@ def create_correlation(degrees, alpha):
 
     return degrees, final_pair_list
 
+
+def create_correlation_bimodal(degrees, alpha):
+    nodes_per_degree = [np.where(degrees == degree_i)[0] for degree_i in range(max(degrees)+1)]
+    final_pair_list = []
+
+    def _suitable(edges, potential_edges):
+    # Helper subroutine to check if there are suitable edges remaining
+    # If False, the generation of the graph has failed
+        if not potential_edges:
+            return True
+        for s1 in potential_edges:
+            for s2 in potential_edges:
+                # Two iterators on the same dictionary are guaranteed
+                # to visit it in the same order if there are no
+                # intervening modifications.
+                if s1 == s2:
+                    # Only need to consider s1-s2 pair one time
+                    break
+                if s1 > s2:
+                    s1, s2 = s2, s1
+                if (s1, s2) not in edges:
+                    return True
+        return False
+
+    def _try_creation(stubs):
+        # Attempt to create an edge set
+
+        edges = set()
+        while stubs:
+            potential_edges = defaultdict(lambda: 0)
+            random.shuffle(stubs)
+            stubiter = iter(stubs)
+            for s1, s2 in zip(stubiter, stubiter):
+                if s1 > s2:
+                    s1, s2 = s2, s1
+                if s1 != s2 and ((s1, s2) not in edges):
+                    edges.add((s1, s2))
+                else:
+                    potential_edges[s1] += 1
+                    potential_edges[s2] += 1
+
+            if not _suitable(edges, potential_edges):
+                return None # failed to find suitable edge set
+
+            stubs = [node for node, potential in potential_edges.items()
+                     for _ in range(potential)]
+        return edges
+
+    # number_of_nodes_per_degree = np.rint(self.p_k(range(self.network_size), *self.dist_args) * n).astype(int)
+
+    for i, nodes_i in enumerate(nodes_per_degree):
+        if len(nodes_i) <= 1:
+            continue
+        int_node_number = int(np.round(i * alpha))
+        if int_node_number == 0:
+            continue
+        available_edges = nodes_i.tolist() * int_node_number
+        edges = _try_creation(available_edges)
+        while edges is None:
+            edges =_try_creation(available_edges)
+        # pair_set = list(zip(available_edges[::2], available_edges[1::2]))
+        # pair_set = [(x,y) for x, y in pair_set if x != y]
+        # pair_set = [(x,y) if x < y else (y, x) for x, y in pair_set]
+        # pair_set = np.unique(pair_set, axis=0)
+        for x, y in edges:
+            degrees[x] -= 1
+            degrees[y] -= 1
+
+        final_pair_list.extend(edges)
+        # final_pair_list.extend(edges.tolist())
+
+    return degrees, final_pair_list
+
+
 def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,correlation_factor):
     k_avg_graph = 0.0
     correlation_graph = 2.0 if correlation_factor!=0 else 0.0
     high_correlation, low_correlation = 1.0, correlation_factor
-    mid_correlation = (low_correlation + high_correlation) / 2
+    mid_correlation = (low_correlation + high_correlation) / 2 if net_type!='bd' else correlation_factor
     correlation_norm = correlation_factor if correlation_factor!=0 else 2.0
     while np.abs(kavg-k_avg_graph)/kavg>0.05 or np.abs(correlation_factor-correlation_graph)/correlation_norm>0.05:
         if net_type=='ig':
@@ -1135,6 +1210,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 100,0.5,1000,'bd',0.5
+    k,epsilon,N,net_type,correlation_factor= 100,0.5,1000,'bd',0.4
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     # plot_gamma_distribution(G,k,epsilon,N,net_type)
