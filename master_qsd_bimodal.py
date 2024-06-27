@@ -95,12 +95,12 @@ def run_multi_correlations(N,R0,gamma,epsilon,k0,alpha):
 
 
 if __name__ == '__main__':
-    N = 1000
+    N = 2500
     R0 = 1.2
     gamma = 1.0
     epsilon = 0.5
-    k0 = 100
-    alpha = np.linspace(0.0,1.0,10)
+    k0 = 200
+    alpha = np.linspace(0.0,1.0,5)
     # tau = MTE(N, R0, gamma, epsilon, k0, alpha)
     run_multi_correlations(N,R0,gamma,epsilon,k0,alpha)
     # print("Extinction time (tau):", tau)

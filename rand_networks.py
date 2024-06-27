@@ -1112,16 +1112,16 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
     while np.abs(kavg-k_avg_graph)/kavg>0.05 or np.abs(correlation_factor-correlation_graph)/correlation_norm>0.05:
         if net_type=='ig':
             wald_mu, wald_lambda = kavg, kavg / epsilon ** 2
-            d = np.ceil(numpy.random.default_rng().wald(wald_mu,wald_lambda,N)).astype(int)
+            d = (numpy.random.default_rng().wald(wald_mu,wald_lambda,N)).astype(int)
         elif net_type=='bet':
             alpha_beta_dist,beta_beta_dist = (N - kavg * (1 + epsilon ** 2)) / (N * epsilon ** 2),((kavg - N) * (kavg - N + kavg * epsilon ** 2)) / (kavg * N * epsilon ** 2)
-            d=np.ceil(numpy.random.default_rng().beta(alpha_beta_dist,beta_beta_dist,N)*N).astype(int)
+            d = (numpy.random.default_rng().beta(alpha_beta_dist,beta_beta_dist,N)*N).astype(int)
         elif net_type=='ln':
             mu_log_norm,sigma_log_norm = -(1 / 2) * np.log((1 + epsilon ** 2) / kavg ** 2),np.sqrt(2 * np.log(kavg) + np.log((1 + epsilon ** 2) / kavg ** 2))
-            d = np.ceil(numpy.random.lognormal(mu_log_norm,sigma_log_norm,N)).astype(int)
+            d = (numpy.random.lognormal(mu_log_norm,sigma_log_norm,N)).astype(int)
         elif net_type=='gam':
             theta, shape, k_avg_graph = epsilon ** 2 * kavg, 1 / epsilon ** 2, 0.0
-            d = np.ceil(numpy.random.default_rng().gamma(shape, theta, N)).astype(int)
+            d = (numpy.random.default_rng().gamma(shape, theta, N)).astype(int)
         elif net_type=='h':
             d = np.full(N, kavg).astype(int)
         elif net_type=='bd':
@@ -1131,7 +1131,7 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             # np.random.shuffle(d)
             G = random_bimodal_assortative_graph(d1,d2,N,mid_correlation)
         elif net_type=='exp':
-            d = np.ceil(np.random.exponential(kavg, N)).astype(int)
+            d = (np.random.exponential(kavg, N)).astype(int)
         # # Remove zeros from d
         # d = d[d != 0]
         # Replace zeros with ones
@@ -1154,13 +1154,13 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         k_avg_graph = np.mean(graph_degrees)
         correlation_graph = nx.degree_assortativity_coefficient(G) if net_type!='h' else 0
 
-
+        print('Correlation input {}, Correlation output {}'.format(round(mid_correlation, 4),
+                   round(correlation_graph, 4)))
         if correlation_graph < correlation_factor and correlation_factor!=0:
             low_correlation = mid_correlation
         else:
             high_correlation = mid_correlation
         mid_correlation = (high_correlation+low_correlation)/2
-
     return G,np.array([G.degree(n) for n in G.nodes()])
     # G,kavg_graph = find_multi_k_binary_search(kavg,epsilon,N,net_type)
     # return G
@@ -1210,6 +1210,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 100,0.5,1000,'bd',0.4
+    k,epsilon,N,net_type,correlation_factor= 10,0.8,10000,'gam',0.01
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     # plot_gamma_distribution(G,k,epsilon,N,net_type)
