@@ -225,11 +225,11 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
 
 if __name__ == '__main__':
     # Parameters for the network
-    N = 1000 # number of nodes
+    N = 1800 # number of nodes
     prog = 'gam'
     lam = 1.2 # The reproduction number
     eps_din,eps_dout = 0.6,0.6 # The normalized std (second moment divided by the first) of the network
-    correlation = 0.9
+    correlation = 0.1
     number_of_networks = 10
     k = 20 # Average number of neighbors for each node
     error_graphs = False
