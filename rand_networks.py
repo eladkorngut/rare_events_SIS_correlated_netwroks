@@ -1154,8 +1154,6 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         k_avg_graph = np.mean(graph_degrees)
         correlation_graph = nx.degree_assortativity_coefficient(G) if net_type!='h' else 0
 
-        print('Correlation input {}, Correlation output {}'.format(round(mid_correlation, 4),
-                   round(correlation_graph, 4)))
         if correlation_graph < correlation_factor and correlation_factor!=0:
             low_correlation = mid_correlation
         else:

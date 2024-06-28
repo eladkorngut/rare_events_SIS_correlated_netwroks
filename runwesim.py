@@ -212,6 +212,14 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs):
         path_parameters = data_path + 'cparameters_{}.txt'.format(i)
         parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
         os.system('{} {} {}'.format(slurm_path,program_path,parameters_path))
+        if run_mc_simulation==True:
+            prog_mc = 'bda'
+            bank,Num_inital_conditions = 1000000,100
+            outfile ='mc_N_{}_eps_{}_R_{}.csv'.format(N,eps_din,lam)
+            os.system(dir_path + '/slurm.serjob python3 ' + dir_path + '/gillespierunhomo.py ' + str(prog_mc) + ' ' +
+                      str(Alpha) + ' ' + str(bank) + ' ' + str(outfile) + ' ' + str(infile) + ' ' + str(
+                Num_inital_conditions) + ' ' + str(Num_inf) + ' ' + str(i) + ' ' + str(Beta))
+
         # os.system('{} {} {} {}'.format(program_path,path_adj_in,path_adj_out,path_parameters))
 
 
@@ -239,6 +247,7 @@ if __name__ == '__main__':
     Num_inf = int(x*N) # Number of initially infected nodes
     Alpha = 1.0 # Recovery rate
     Beta_avg = Alpha * lam / k # Infection rate for each node
+    run_mc_simulation = True
 
     parameters = np.array([N,sims,it,k,x,lam,jump,Num_inf,Alpha,number_of_networks,tau,eps_din,eps_dout,new_trajcetory_bin,prog,Beta_avg,error_graphs,correlation])
     graphname  = 'GNull'
@@ -251,5 +260,5 @@ if __name__ == '__main__':
 
 
     # What's the job to run either on the cluster or on the laptop
-    job_to_cluster(foldername,parameters,Istar,error_graphs)
+    job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation)
     # act_as_main(foldername,parameters,Istar,prog)
