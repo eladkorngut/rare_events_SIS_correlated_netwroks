@@ -7,7 +7,6 @@ import pickle
 import sys
 import time
 import rand_networks_assortative
-import rand_weighted_networks
 import rand_networks
 from scipy.sparse.linalg import eigsh
 
