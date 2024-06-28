@@ -173,7 +173,7 @@ def act_as_main(foldername,parameters,Istar,prog):
         parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
 
 
-def job_to_cluster(foldername,parameters,Istar,error_graphs):
+def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
     # This function submit jobs to the cluster with the following program keys:
     # bd: bimodal network, h:homogenous, exp:exponential, gam:gamma, bet:beta, ln:log-normal, ig:Wald
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -226,12 +226,12 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs):
 if __name__ == '__main__':
     # Parameters for the network
     N = 1000 # number of nodes
-    prog = 'bd'
+    prog = 'gam'
     lam = 1.2 # The reproduction number
-    eps_din,eps_dout = 0.5,0.5 # The normalized std (second moment divided by the first) of the network
-    correlation = 0.01
-    number_of_networks = 5
-    k = 100 # Average number of neighbors for each node
+    eps_din,eps_dout = 0.6,0.6 # The normalized std (second moment divided by the first) of the network
+    correlation = 0.9
+    number_of_networks = 10
+    k = 20 # Average number of neighbors for each node
     error_graphs = False
 
     # Parameters for the WE method
