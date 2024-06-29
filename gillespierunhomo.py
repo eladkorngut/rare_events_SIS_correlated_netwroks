@@ -1427,7 +1427,7 @@ def actasmain():
     #                                    Num_inf, 1, Beta)
 
 if __name__ == '__main__':
-    submit = True
+    submit = False
     start_time = time.time()
     if submit==True:
         actasmain()
