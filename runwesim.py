@@ -193,6 +193,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
 
             # Convert the undirected graph to a directed graph with bidirectional edges
             G = G.to_directed()
+            G = netinithomo.set_graph_attriubute_DiGraph(G)
 
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
@@ -219,7 +220,6 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
         os.system('{} {} {}'.format(slurm_path,program_path,parameters_path))
         if run_mc_simulation==True:
             prog_mc = 'gam'
-            G = netinithomo.set_graph_attriubute_DiGraph(G)
             bank,Num_inital_conditions = 1000000,100
             outfile ='mc_N_{}_eps_{}_R_{}'.format(N,eps_din,lam)
             os.system(dir_path + '/slurm.serjob python3 ' + dir_path + '/gillespierunhomo.py ' + str(prog_mc) + ' ' +
