@@ -189,6 +189,10 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
     for i in range(int(number_of_networks)):
         if error_graphs==False:
             G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation)
+
+            # Convert the undirected graph to a directed graph with bidirectional edges
+            G = G.to_directed()
+
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
@@ -213,9 +217,9 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
         parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
         os.system('{} {} {}'.format(slurm_path,program_path,parameters_path))
         if run_mc_simulation==True:
-            prog_mc = 'bda'
+            prog_mc = 'gam'
             bank,Num_inital_conditions = 1000000,100
-            outfile ='mc_N_{}_eps_{}_R_{}.csv'.format(N,eps_din,lam)
+            outfile ='mc_N_{}_eps_{}_R_{}'.format(N,eps_din,lam)
             os.system(dir_path + '/slurm.serjob python3 ' + dir_path + '/gillespierunhomo.py ' + str(prog_mc) + ' ' +
                       str(Alpha) + ' ' + str(bank) + ' ' + str(outfile) + ' ' + str(infile) + ' ' + str(
                 Num_inital_conditions) + ' ' + str(Num_inf) + ' ' + str(i) + ' ' + str(Beta))
