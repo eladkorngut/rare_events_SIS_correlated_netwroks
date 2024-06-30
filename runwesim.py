@@ -6,6 +6,7 @@ import pickle
 import networkx as nx
 from scipy.stats import skew
 from scipy.sparse.linalg import eigsh
+import netinithomo
 
 
 def export_parameters_to_csv(parameters,network_number):
@@ -218,6 +219,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
         os.system('{} {} {}'.format(slurm_path,program_path,parameters_path))
         if run_mc_simulation==True:
             prog_mc = 'gam'
+            G = netinithomo.set_graph_attriubute_DiGraph(G)
             bank,Num_inital_conditions = 1000000,100
             outfile ='mc_N_{}_eps_{}_R_{}'.format(N,eps_din,lam)
             os.system(dir_path + '/slurm.serjob python3 ' + dir_path + '/gillespierunhomo.py ' + str(prog_mc) + ' ' +
