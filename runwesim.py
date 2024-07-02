@@ -190,11 +190,6 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
     for i in range(int(number_of_networks)):
         if error_graphs==False:
             G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation)
-
-            # Convert the undirected graph to a directed graph with bidirectional edges
-            G = G.to_directed()
-            G = netinithomo.set_graph_attriubute_DiGraph(G)
-
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
@@ -219,6 +214,11 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
         parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
         os.system('{} {} {}'.format(slurm_path,program_path,parameters_path))
         if run_mc_simulation==True:
+            # Convert the undirected graph to a directed graph with bidirectional edges
+            G = G.to_directed()
+            G = netinithomo.set_graph_attriubute_DiGraph(G)
+            with open(infile, 'wb') as f:
+                pickle.dump(G, f, pickle.HIGHEST_PROTOCOL)
             prog_mc = 'gam'
             bank,Num_inital_conditions = 1000000,100
             outfile ='mc_N_{}_eps_{}_R_{}'.format(N,eps_din,lam)
@@ -236,13 +236,13 @@ if __name__ == '__main__':
     lam = 1.2 # The reproduction number
     eps_din,eps_dout = 0.6,0.6 # The normalized std (second moment divided by the first) of the network
     correlation = 0.1
-    number_of_networks = 10
+    number_of_networks = 20
     k = 20 # Average number of neighbors for each node
     error_graphs = False
 
     # Parameters for the WE method
-    sims = 1000 # Number of simulations at each bin
-    tau = 0.5
+    sims = 500 # Number of simulations at each bin
+    tau = 2.0
     it = 70
     jump = 1
     new_trajcetory_bin = 2
@@ -253,7 +253,7 @@ if __name__ == '__main__':
     Num_inf = int(x*N) # Number of initially infected nodes
     Alpha = 1.0 # Recovery rate
     Beta_avg = Alpha * lam / k # Infection rate for each node
-    run_mc_simulation = True
+    run_mc_simulation = False
 
     parameters = np.array([N,sims,it,k,x,lam,jump,Num_inf,Alpha,number_of_networks,tau,eps_din,eps_dout,new_trajcetory_bin,prog,Beta_avg,error_graphs,correlation])
     graphname  = 'GNull'
