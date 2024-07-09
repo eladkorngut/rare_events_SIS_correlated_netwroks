@@ -234,18 +234,18 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
 
 if __name__ == '__main__':
     # Parameters for the network
-    N = 1800 # number of nodes
-    prog = 'gam'
-    lam = 1.2 # The reproduction number
-    eps_din,eps_dout = 0.6,0.6 # The normalized std (second moment divided by the first) of the network
-    correlation = 0.1
-    number_of_networks = 20
-    k = 20 # Average number of neighbors for each node
+    N = 7500 # number of nodes
+    prog = 'bd'
+    lam = 1.3 # The reproduction number
+    eps_din,eps_dout = 0.02,0.02 # The normalized std (second moment divided by the first) of the network
+    correlation = 0.02
+    number_of_networks = 5
+    k = 50 # Average number of neighbors for each node
     error_graphs = False
 
     # Parameters for the WE method
-    sims = 500 # Number of simulations at each bin
-    tau = 2.0
+    sims = 1000 # Number of simulations at each bin
+    tau = 0.4
     it = 70
     jump = 1
     new_trajcetory_bin = 2

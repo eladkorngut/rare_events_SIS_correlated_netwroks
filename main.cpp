@@ -809,14 +809,5 @@ int main(int argc, char* argv[]) {
     write_output_data_multi_col(weights_name,net_d.num_inf,net_d.weights);
     std::vector<double> outputparameters={double(duration.count()),double(network_number),TAU};
     write_output_data(parmetername,outputparameters);
-
-
-    // A temporery version to be deleted further along
-    parmetername = "random_number.csv";
-    std::uniform_int_distribution<int> node_dist(0,100);
-    double temp_dist = node_dist(gen); //randomly choose infected node
-    std::vector<double> temp_parameters={temp_dist,double(network_number)};
-    write_output_data(parmetername,temp_parameters);
-
     return 0;
 }
