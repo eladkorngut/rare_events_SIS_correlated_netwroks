@@ -173,10 +173,18 @@ def act_as_main(foldername,parameters,Istar,prog):
         path_parameters = data_path + 'cparameters_{}.txt'.format(i)
         parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
 
+def random_temp_program(i):
+    random_numbers = np.random.random(100)
+    # Save the random numbers to a text file
+    with open(f'random_numbers_{i}.txt', 'w') as file:
+        for number in random_numbers:
+            file.write(f"{number}\n")
+    return 0
 
 def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
     # This function submit jobs to the cluster with the following program keys:
     # bd: bimodal network, h:homogenous, exp:exponential, gam:gamma, bet:beta, ln:log-normal, ig:Wald
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
     slurm_path = dir_path +'/slurm.serjob'
     program_path = dir_path +'/cwesis.exe'
@@ -188,6 +196,9 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
         int(N), int(sims), int(it), float(k), float(x), float(lam), float(jump), int(Num_inf), float(Alpha), int(number_of_networks),\
         float(tau), float(eps_din), float(eps_dout),int(new_trajcetory_bin), prog, float(Beta_avg), float(correlation)
     for i in range(int(number_of_networks)):
+
+        random_temp_program(i)
+
         if error_graphs==False:
             G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation)
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
