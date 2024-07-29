@@ -7,6 +7,7 @@ import networkx as nx
 from scipy.stats import skew
 from scipy.sparse.linalg import eigsh
 import netinithomo
+import argparse
 
 
 def export_parameters_to_csv(parameters,network_number):
@@ -233,41 +234,64 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Process network and WE method parameters.")
+
     # Parameters for the network
-    N = 7500 # number of nodes
-    prog = 'bd'
-    lam = 1.3 # The reproduction number
-    eps_din,eps_dout = 0.02,0.02 # The normalized std (second moment divided by the first) of the network
-    correlation = 0.02
-    number_of_networks = 5
-    k = 50 # Average number of neighbors for each node
-    error_graphs = False
+    parser.add_argument('--N', type=int, help='Number of nodes')
+    parser.add_argument('--prog', type=str, help='Program')
+    parser.add_argument('--lam', type=float, help='The reproduction number')
+    parser.add_argument('--eps_din', type=float, help='The normalized std (second moment divided by the first) of the in-degree distribution')
+    parser.add_argument('--eps_dout', type=float, help='The normalized std (second moment divided by the first) of the out-degree distribution')
+    parser.add_argument('--correlation', type=float, help='Correlation parameter')
+    parser.add_argument('--number_of_networks', type=int, help='Number of networks')
+    parser.add_argument('--k', type=int, help='Average number of neighbors for each node')
+    parser.add_argument('--error_graphs', action='store_true', help='Flag for error graphs')
 
     # Parameters for the WE method
-    sims = 1000 # Number of simulations at each bin
-    tau = 0.4
-    it = 70
-    jump = 1
-    new_trajcetory_bin = 2
+    parser.add_argument('--sims', type=int, help='Number of simulations at each bin')
+    parser.add_argument('--tau', type=float, help='Tau parameter')
+    parser.add_argument('--it', type=int, help='Number of iterations')
+    parser.add_argument('--jump', type=int, help='Jump parameter')
+    parser.add_argument('--new_trajectory_bin', type=int, help='New trajectory bin')
 
-    # Parameter that don't get chagne
-    relaxation_time  = 20
-    x = 0.2 # intial infection percentage
-    Num_inf = int(x*N) # Number of initially infected nodes
-    Alpha = 1.0 # Recovery rate
-    Beta_avg = Alpha * lam / k # Infection rate for each node
-    run_mc_simulation = False
+    # Parameters that don't get changed
+    parser.add_argument('--relaxation_time', type=int, help='Relaxation time')
+    parser.add_argument('--x', type=float, help='Initial infection percentage')
+    parser.add_argument('--Alpha', type=float, help='Recovery rate')
+    parser.add_argument('--run_mc_simulation', action='store_true', help='Flag to run MC simulation')
 
-    parameters = np.array([N,sims,it,k,x,lam,jump,Num_inf,Alpha,number_of_networks,tau,eps_din,eps_dout,new_trajcetory_bin,prog,Beta_avg,error_graphs,correlation])
-    graphname  = 'GNull'
-    foldername = 'prog_{}_N{}_k_{}_R_{}_tau_{}_it_{}_jump_{}_new_trajcetory_bin_{}_sims_{}_net_{}_epsin_{}_epsout_{}_correlation_{}_err_{}'.format(
-        prog, N, k, lam, tau, it, jump, new_trajcetory_bin, sims, number_of_networks, eps_din, eps_dout,correlation,error_graphs)
-    # y1star=(-2*eps_din*(1 + eps_dout*eps_din)+ lam*(-1 + eps_din)*(1 + (-1 + 2*eps_dout)*eps_din)+ np.sqrt(lam**2 +eps_din*(4*eps_din +lam**2*eps_din*(-2 +eps_din**2) +4*eps_dout*(lam -(-2 + lam)*eps_din**2) +4*eps_dout**2*eps_din*(lam -(-1 + lam)*eps_din**2))))/(4*lam*(-1 +eps_dout)*(-1 +eps_din)*eps_din)
-    # y2star=(lam + eps_din*(-2 + 2*lam +lam*eps_din+ 2*eps_dout*(lam +(-1 + lam)*eps_din)) -np.sqrt(lam**2 +eps_din*(4*eps_din +lam**2*eps_din*(-2 +eps_din**2) +4*eps_dout*(lam -(-2 + lam)*eps_din**2) +4*eps_dout**2*eps_din*(lam -(-1 + lam)*eps_din**2))))/(4*lam*(1 +eps_dout)*eps_din*(1 + eps_din))
-    # Istar = (y1star +y2star)*N
+    args = parser.parse_args()
+
+    # Default parameters
+    N = 7500 if args.N is None else args.N
+    prog = 'bd' if args.prog is None else args.prog
+    lam = 1.3 if args.lam is None else args.lam
+    eps_din = 0.02 if args.eps_din is None else args.eps_din
+    eps_dout = 0.02 if args.eps_dout is None else args.eps_dout
+    correlation = 0.02 if args.correlation is None else args.correlation
+    number_of_networks = 5 if args.number_of_networks is None else args.number_of_networks
+    k = 50 if args.k is None else args.k
+    error_graphs = args.error_graphs
+
+    sims = 1000 if args.sims is None else args.sims
+    tau = 0.4 if args.tau is None else args.tau
+    it = 70 if args.it is None else args.it
+    jump = 1 if args.jump is None else args.jump
+    new_trajectory_bin = 2 if args.new_trajectory_bin is None else args.new_trajectory_bin
+
+    relaxation_time = 20 if args.relaxation_time is None else args.relaxation_time
+    x = 0.2 if args.x is None else args.x
+    Num_inf = int(x * N)
+    Alpha = 1.0 if args.Alpha is None else args.Alpha
+    Beta_avg = Alpha * lam / k
+    run_mc_simulation = args.run_mc_simulation
+
+    parameters = np.array([N, sims, it, k, x, lam, jump, Num_inf, Alpha, number_of_networks, tau, eps_din, eps_dout, new_trajectory_bin, prog, Beta_avg, error_graphs, correlation])
+    graphname = 'GNull'
+    foldername = 'prog_{}_N{}_k_{}_R_{}_tau_{}_it_{}_jump_{}_new_trajectory_bin_{}_sims_{}_net_{}_epsin_{}_epsout_{}_correlation_{}_err_{}'.format(
+        prog, N, k, lam, tau, it, jump, new_trajectory_bin, sims, number_of_networks, eps_din, eps_dout, correlation, error_graphs)
     Istar = (1 - 1/lam) * N
 
+    job_to_cluster(foldername, parameters, Istar, error_graphs, run_mc_simulation)
+    act_as_main(foldername, parameters, Istar, prog)
 
-    # What's the job to run either on the cluster or on the laptop
-    job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation)
-    # act_as_main(foldername,parameters,Istar,prog)

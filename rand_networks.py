@@ -1132,6 +1132,9 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             G = random_bimodal_assortative_graph(d1,d2,N,mid_correlation)
         elif net_type=='exp':
             d = (np.random.exponential(kavg, N)).astype(int)
+        elif net_type=='norm':
+            d = (numpy.random.default_rng().normal(loc=kavg, scale=epsilon * kavg, size=N)).astype(int)
+            d = d[d<2*np.mean(d)]
         # # Remove zeros from d
         # d = d[d != 0]
         # Replace zeros with ones
@@ -1208,6 +1211,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 10,0.8,10000,'gam',0.01
+    k,epsilon,N,net_type,correlation_factor= 50,0.5,20000,'norm',0.1
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     # plot_gamma_distribution(G,k,epsilon,N,net_type)
