@@ -45,6 +45,7 @@ if __name__ == '__main__':
                    f'--k {k} {error_graphs_flag} --sims {sims} --tau {tau} --it {it} --jump {jump} '
                    f'--new_trajectory_bin {new_trajectory_bin} --relaxation_time {relaxation_time} --x {x} '
                    f'--Alpha {Alpha} {run_mc_simulation_flag}')
+        os.system(command)
 
 
 
