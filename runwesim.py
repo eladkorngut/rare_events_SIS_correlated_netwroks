@@ -293,5 +293,5 @@ if __name__ == '__main__':
     Istar = (1 - 1/lam) * N
 
     job_to_cluster(foldername, parameters, Istar, error_graphs, run_mc_simulation)
-    act_as_main(foldername, parameters, Istar, prog)
+    # act_as_main(foldername, parameters, Istar, prog)
 

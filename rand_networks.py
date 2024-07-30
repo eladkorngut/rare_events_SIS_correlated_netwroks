@@ -1135,6 +1135,13 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         elif net_type=='norm':
             d = (numpy.random.default_rng().normal(loc=kavg, scale=epsilon * kavg, size=N)).astype(int)
             d = d[d<2*np.mean(d)]
+        elif net_type=='logic':
+            d = (numpy.random.default_rng().logistic(loc=kavg, scale=np.sqrt(3)*epsilon*kavg/np.pi, size=N)).astype(int)
+            d = d[d<2*np.mean(d)]
+        elif net_type=='lap':
+            d = (numpy.random.default_rng().laplace(loc=kavg, scale=epsilon*kavg/np.sqrt(2), size=N)).astype(int)
+            d = d[d<2*np.mean(d)]
+
         # # Remove zeros from d
         # d = d[d != 0]
         # Replace zeros with ones
@@ -1211,6 +1218,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 50,0.5,20000,'norm',0.1
+    k,epsilon,N,net_type,correlation_factor= 50,0.5,7000,'norm',0.1
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     # plot_gamma_distribution(G,k,epsilon,N,net_type)
