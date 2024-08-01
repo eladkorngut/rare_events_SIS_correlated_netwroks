@@ -1141,6 +1141,25 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         elif net_type=='lap':
             d = (numpy.random.default_rng().laplace(loc=kavg, scale=epsilon*kavg/np.sqrt(2), size=N)).astype(int)
             d = d[d<2*np.mean(d)]
+        elif net_type=='cau':
+            # Generate samples from the standard Cauchy distribution
+            samples = np.random.default_rng().standard_cauchy(N)
+
+            # Convert to integers
+            samples = samples.astype(int)
+
+            # Truncate at zero (remove negative values)
+            truncated_samples = samples[samples > 0]
+
+            # Calculate the actual mean and standard deviation after truncation
+            actual_mean = np.mean(truncated_samples)
+            actual_std = np.std(truncated_samples)
+
+            # Scale the truncated samples to achieve the desired mean and standard deviation
+            scaled_samples = (samples - actual_mean) / actual_std * (epsilon*kavg) + kavg
+
+            # Round the scaled values to integers to maintain integer distribution
+            d = np.round(scaled_samples).astype(int)
 
         # # Remove zeros from d
         # d = d[d != 0]
@@ -1218,6 +1237,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 50,0.5,7000,'norm',0.1
+    k,epsilon,N,net_type,correlation_factor= 50,0.5,7000,'cau',0.1
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     # plot_gamma_distribution(G,k,epsilon,N,net_type)

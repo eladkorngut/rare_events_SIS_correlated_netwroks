@@ -5,18 +5,18 @@ import os
 if __name__ == '__main__':
 
     # Netwrok parameters
-    N = 7500
+    N = 7000
     prog = 'bd'
-    lam = 1.3
-    eps_din = 0.02
-    eps_dout = 0.02
-    correlation = [0.3,0.4]
-    number_of_networks = 5
+    lam = 1.1
+    eps_din = 0.5
+    eps_dout = 0.5
+    correlation = [0.01,0.03,0.05,0.08,0.1,0.12,0.15,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
+    number_of_networks = 20
     k = 50
 
     # We simulation parameters
-    sims = 1000
-    tau = 0.4
+    sims = 50
+    tau = 1.0
     it = 70
     jump = 1
     new_trajectory_bin = 2
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     program_path = dir_path +'/runwesim.py'
     loop_over = correlation
 
-    for i in correlation:
+    for i in loop_over:
         error_graphs_flag = '--error_graphs' if error_graphs else ''
         run_mc_simulation_flag = '--run_mc_simulation' if run_mc_simulation else ''
 
