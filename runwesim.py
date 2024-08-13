@@ -175,7 +175,7 @@ def act_as_main(foldername,parameters,Istar,prog):
         parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
 
 
-def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
+def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,short_path):
     # This function submit jobs to the cluster with the following program keys:
     # bd: bimodal network, h:homogenous, exp:exponential, gam:gamma, bet:beta, ln:log-normal, ig:Wald
 
@@ -198,6 +198,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
             largest_eigenvalue,largest_eigen_vector = eigsh(nx.adjacency_matrix(G).astype(float), k=1, which='LA', return_eigenvectors=True)
+            mean_shortest_path_length = nx.average_shortest_path_length(G) if short_path==True else 0
             Beta = float(lam) / largest_eigenvalue[0]
             graph_correlation = nx.degree_assortativity_coefficient(G)
             rho = (np.sum(largest_eigen_vector) / (N * np.sum(largest_eigen_vector ** 3))) * (Beta * largest_eigenvalue[0] - 1)
@@ -205,8 +206,9 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation):
                 [N, sims, it, k_avg_graph, x, lam, jump, Alpha, Beta, i, tau, Istar, new_trajcetory_bin, dir_path,
                  prog, eps_graph, eps_graph, graph_std, graph_skewness, third_moment, second_moment,graph_correlation,rho])
         np.save('parameters_{}.npy'.format(i), parameters)
-        np.save('largest_eigen_vector_{}.npy'.format(i), largest_eigenvalue[0])
-        np.save('largest_eigenvalue_{}.npy'.format(i), largest_eigen_vector)
+        np.save('largest_eigen_vector_{}.npy'.format(i), largest_eigen_vector)
+        np.save('largest_eigenvalue_{}.npy'.format(i), largest_eigenvalue[0])
+        np.save(f'mean_shortest_path_length_{i}.npy',mean_shortest_path_length)
         infile = 'GNull_{}.pickle'.format(i)
         with open(infile,'wb') as f:
             pickle.dump(G,f,pickle.HIGHEST_PROTOCOL)
@@ -259,22 +261,23 @@ if __name__ == '__main__':
     parser.add_argument('--x', type=float, help='Initial infection percentage')
     parser.add_argument('--Alpha', type=float, help='Recovery rate')
     parser.add_argument('--run_mc_simulation', action='store_true', help='Flag to run MC simulation')
+    parser.add_argument('--short_path', action='store_true', help='Flag to measure mean shortest path')
 
     args = parser.parse_args()
 
     # Default parameters
-    N = 7500 if args.N is None else args.N
-    prog = 'bd' if args.prog is None else args.prog
+    N = 5000 if args.N is None else args.N
+    prog = 'gam' if args.prog is None else args.prog
     lam = 1.3 if args.lam is None else args.lam
-    eps_din = 0.02 if args.eps_din is None else args.eps_din
-    eps_dout = 0.02 if args.eps_dout is None else args.eps_dout
-    correlation = 0.02 if args.correlation is None else args.correlation
+    eps_din = 0.3 if args.eps_din is None else args.eps_din
+    eps_dout = 0.3 if args.eps_dout is None else args.eps_dout
+    correlation = 0.7 if args.correlation is None else args.correlation
     number_of_networks = 5 if args.number_of_networks is None else args.number_of_networks
     k = 50 if args.k is None else args.k
     error_graphs = args.error_graphs
 
-    sims = 1000 if args.sims is None else args.sims
-    tau = 0.4 if args.tau is None else args.tau
+    sims = 500 if args.sims is None else args.sims
+    tau = 1.0 if args.tau is None else args.tau
     it = 70 if args.it is None else args.it
     jump = 1 if args.jump is None else args.jump
     new_trajectory_bin = 2 if args.new_trajectory_bin is None else args.new_trajectory_bin
@@ -285,6 +288,9 @@ if __name__ == '__main__':
     Alpha = 1.0 if args.Alpha is None else args.Alpha
     Beta_avg = Alpha * lam / k
     run_mc_simulation = args.run_mc_simulation
+    # run_mc_simulationtion = True
+    short_path = False
+
 
     parameters = np.array([N, sims, it, k, x, lam, jump, Num_inf, Alpha, number_of_networks, tau, eps_din, eps_dout, new_trajectory_bin, prog, Beta_avg, error_graphs, correlation])
     graphname = 'GNull'
@@ -292,6 +298,6 @@ if __name__ == '__main__':
         prog, N, k, lam, tau, it, jump, new_trajectory_bin, sims, number_of_networks, eps_din, eps_dout, correlation, error_graphs)
     Istar = (1 - 1/lam) * N
 
-    job_to_cluster(foldername, parameters, Istar, error_graphs, run_mc_simulation)
+    job_to_cluster(foldername, parameters, Istar, error_graphs, run_mc_simulation,short_path)
     # act_as_main(foldername, parameters, Istar, prog)
 
