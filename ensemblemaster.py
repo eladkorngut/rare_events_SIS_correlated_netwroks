@@ -59,7 +59,5 @@ if __name__ == '__main__':
                    f'--Alpha {Alpha} {run_mc_simulation_flag}')
         os.system(command)
 
-        os.system(command)
-
 
 
