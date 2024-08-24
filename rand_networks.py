@@ -1103,13 +1103,63 @@ def create_correlation_bimodal(degrees, alpha):
     return degrees, final_pair_list
 
 
+def xulvi_brunet_sokolov_target_assortativity(G, target_assortativity, current_assortativity,tolerance=0.05, max_iterations=10000):
+    """
+    Adjusts the graph G using the Xulvi-Brunet–Sokolov algorithm to achieve a target assortativity.
+
+    Parameters:
+        G (networkx.Graph): The input graph to be rewired.
+        target_assortativity (float): The desired assortativity coefficient (can be negative for disassortativity).
+        tolerance (float): The acceptable difference between the current and target assortativity.
+        max_iterations (int): Maximum number of iterations to perform.
+
+    Returns:
+        networkx.Graph: The rewired graph with the target assortativity.
+        float: The achieved assortativity.
+    """
+
+    edges = list(G.edges())
+    iteration = 0
+    step = 100
+    while np.abs(target_assortativity-current_assortativity)/np.abs(target_assortativity) > tolerance and iteration < max_iterations:
+        # Randomly select two distinct edges (u, v) and (x, y)
+        (u, v), (x, y) = random.sample(edges, 2)
+
+        if len({u, v, x, y}) == 4 and not G.has_edge(u, y) and not G.has_edge(x, v):
+            k_u, k_v = G.degree[u], G.degree[v]
+            k_x, k_y = G.degree[x], G.degree[y]
+
+            current_diff = abs(k_u - k_v) + abs(k_x - k_y)
+            new_diff = abs(k_u - k_y) + abs(k_x - k_v)
+
+            if (target_assortativity > 0 and new_diff < current_diff) or \
+                    (target_assortativity < 0 and new_diff > current_diff):
+                G.remove_edge(u, v)
+                G.remove_edge(x, y)
+                G.add_edge(u, y)
+                G.add_edge(x, v)
+
+                edges.remove((u, v))
+                edges.remove((x, y))
+                edges.append((u, y))
+                edges.append((x, v))
+
+                if iteration%step==0:
+                    current_assortativity = nx.degree_assortativity_coefficient(G)
+                    if np.abs(current_assortativity)>np.abs(target_assortativity):
+                        step=1
+        iteration += 1
+
+    return G, current_assortativity
+
+
 def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,correlation_factor):
     k_avg_graph = 0.0
     correlation_graph = 2.0 if correlation_factor!=0 else 0.0
     high_correlation, low_correlation = 1.0, correlation_factor
     mid_correlation = (low_correlation + high_correlation) / 2 if net_type!='bd' else correlation_factor
     correlation_norm = correlation_factor if correlation_factor!=0 else 2.0
-    while np.abs(kavg-k_avg_graph)/kavg>0.05 or np.abs(correlation_factor-correlation_graph)/correlation_norm>0.05:
+    while np.abs(kavg-k_avg_graph)/kavg>0.05 or (np.abs(correlation_factor-correlation_graph)/correlation_norm>0.05):
         if net_type=='ig':
             wald_mu, wald_lambda = kavg, kavg / epsilon ** 2
             d = (numpy.random.default_rng().wald(wald_mu,wald_lambda,N)).astype(int)
@@ -1150,13 +1200,13 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             if np.sum(d)%2!=0:
                 d[int(len(d)*np.random.random())]+=1
 
-        if correlation_factor!=0 and net_type!='bd':
+        if correlation_factor>0 and net_type!='bd':
             d, correlated_nodes = create_correlation(d, mid_correlation)
         G = nx.configuration_model(d) if net_type!='bd' else G
         G = nx.Graph(G)
 
         # Add correlated edges to the graph
-        if correlation_factor != 0 and net_type!='bd':
+        if correlation_factor > 0 and net_type!='bd':
             G.add_edges_from(correlated_nodes)
 
         G.remove_edges_from(nx.selfloop_edges(G))
@@ -1164,11 +1214,17 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         k_avg_graph = np.mean(graph_degrees)
         correlation_graph = nx.degree_assortativity_coefficient(G) if net_type!='h' else 0
 
-        if correlation_graph < correlation_factor and correlation_factor!=0:
+        if correlation_graph < correlation_factor and correlation_factor>0:
             low_correlation = mid_correlation
         else:
             high_correlation = mid_correlation
         mid_correlation = (high_correlation+low_correlation)/2
+
+        if correlation_factor<0:
+            G, correlation_graph=xulvi_brunet_sokolov_target_assortativity(G,correlation_factor,correlation_graph,0.05,1000000)
+            if np.abs(kavg-k_avg_graph)/kavg>0.05:
+                return G, np.array([G.degree(n) for n in G.nodes()])
+
     return G,np.array([G.degree(n) for n in G.nodes()])
     # G,kavg_graph = find_multi_k_binary_search(kavg,epsilon,N,net_type)
     # return G
@@ -1218,6 +1274,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 50,0.5,7000,'norm',0.1
+    k,epsilon,N,net_type,correlation_factor= 50,0.5,1000,'gam',-0.1
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
     # plot_gamma_distribution(G,k,epsilon,N,net_type)

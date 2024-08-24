@@ -225,7 +225,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
             G = netinithomo.set_graph_attriubute_DiGraph(G)
             with open(infile, 'wb') as f:
                 pickle.dump(G, f, pickle.HIGHEST_PROTOCOL)
-            prog_mc = 'gam'
+            prog_mc = 'bd'
             bank,Num_inital_conditions = 1000000,100
             outfile ='mc_N_{}_eps_{}_R_{}'.format(N,eps_din,lam)
             os.system(dir_path + '/slurm.serjob python3 ' + dir_path + '/gillespierunhomo.py ' + str(prog_mc) + ' ' +
@@ -266,12 +266,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Default parameters
-    N = 5000 if args.N is None else args.N
-    prog = 'gam' if args.prog is None else args.prog
+    N = 10000 if args.N is None else args.N
+    prog = 'norm' if args.prog is None else args.prog
     lam = 1.3 if args.lam is None else args.lam
-    eps_din = 0.3 if args.eps_din is None else args.eps_din
-    eps_dout = 0.3 if args.eps_dout is None else args.eps_dout
-    correlation = 0.7 if args.correlation is None else args.correlation
+    eps_din = 0.5 if args.eps_din is None else args.eps_din
+    eps_dout = 0.5 if args.eps_dout is None else args.eps_dout
+    correlation = 0.3 if args.correlation is None else args.correlation
     number_of_networks = 5 if args.number_of_networks is None else args.number_of_networks
     k = 50 if args.k is None else args.k
     error_graphs = args.error_graphs
