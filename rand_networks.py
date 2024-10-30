@@ -1120,7 +1120,7 @@ def xulvi_brunet_sokolov_target_assortativity(G, target_assortativity, current_a
 
     edges = list(G.edges())
     iteration = 0
-    step = 100
+    step = 100 if np.abs(target_assortativity)>0.01 else 1
     while np.abs(target_assortativity-current_assortativity)/np.abs(target_assortativity) > tolerance and iteration < max_iterations:
         # Randomly select two distinct edges (u, v) and (x, y)
         (u, v), (x, y) = random.sample(edges, 2)
@@ -1144,7 +1144,7 @@ def xulvi_brunet_sokolov_target_assortativity(G, target_assortativity, current_a
                 edges.append((u, y))
                 edges.append((x, v))
 
-                if iteration%step==0:
+                if iteration%step==0 and step>1:
                     current_assortativity = nx.degree_assortativity_coefficient(G)
                     if np.abs(current_assortativity)>np.abs(target_assortativity):
                         step=1
