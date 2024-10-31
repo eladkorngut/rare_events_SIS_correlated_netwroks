@@ -62,7 +62,7 @@ def numerical_xstar(kavg,epsilon,correlation,net_type,N,lam):
         k_values = np.linspace(1, N, N)
         pdf_values = wald.pdf(k_values, loc=0, scale=epsilon*kavg)  # Using loc and scale for the PDF
         k_avg = np.sum(pdf_values * k_values)
-        # pdf_values = wald.pdf(k_values, loc=kavg - k_avg, scale=epsilon * kavg)  # Using loc and scale
+        pdf_values = wald.pdf(k_values, loc=kavg - k_avg, scale=epsilon * kavg)  # Using loc and scale
         # Apply the condition N * pdf_values > 1
         condition = N * pdf_values > 1
 
