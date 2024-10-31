@@ -2,6 +2,9 @@ import numpy as np
 import os
 from scipy.optimize import fsolve
 from scipy.stats import gamma
+from scipy.stats import lognorm
+from scipy.stats import wald
+from scipy.stats import beta as beta_sci
 from scipy.linalg import eigvals
 import argparse
 
@@ -54,6 +57,54 @@ def numerical_xstar(kavg,epsilon,correlation,net_type,N,lam):
         unique_degrees = k_values[condition]
         P_k = pdf_values[condition]
         k_avg = np.sum(P_k*unique_degrees)
+    elif net_type=='ig':
+        # wald_mu, wald_lambda = kavg, kavg / epsilon ** 2
+        k_values = np.linspace(1, N, N)
+        pdf_values = wald.pdf(k_values, loc=0, scale=epsilon*kavg)  # Using loc and scale for the PDF
+        k_avg = np.sum(pdf_values * k_values)
+        # pdf_values = wald.pdf(k_values, loc=kavg - k_avg, scale=epsilon * kavg)  # Using loc and scale
+        # Apply the condition N * pdf_values > 1
+        condition = N * pdf_values > 1
+
+        # Filter k_values and pdf_values based on the condition
+        unique_degrees = k_values[condition]
+        P_k = pdf_values[condition]
+        k_avg = np.sum(P_k*unique_degrees)
+    elif net_type=='ln':
+        # mu_log_norm, sigma_log_norm = -(1 / 2) * np.log((1 + epsilon ** 2) / kavg ** 2), np.sqrt(2 *np.log(kavg) +
+        #                             np.log((1 + epsilon ** 2) / kavg ** 2))
+
+        mu_log = np.log(kavg / np.sqrt(1 + epsilon ** 2))
+        sigma_log = np.sqrt(np.log(1 + epsilon ** 2))
+
+        k_values = np.linspace(1, N, N)
+
+        pdf_values = lognorm.pdf(k_values, s=sigma_log, loc=0, scale=np.exp(mu_log))
+
+        # pdf_values = lognorm.pdf(k_values,mu_log_norm,sigma_log_norm )  # Using loc and scale
+        # Apply the condition N * pdf_values > 1
+        condition = N * pdf_values > 1
+
+        # Filter k_values and pdf_values based on the condition
+        unique_degrees = k_values[condition]
+        P_k = pdf_values[condition]
+        k_avg = np.sum(P_k*unique_degrees)
+    # elif net_type=='bet':
+    #     alpha_beta_dist, beta_beta_dist = (N - kavg * (1 + epsilon ** 2)) / (N * epsilon ** 2), (
+    #                 (kavg - N) * (kavg - N + kavg * epsilon ** 2)) / (kavg * N * epsilon ** 2)
+    #     d = (np.random.default_rng().beta(alpha_beta_dist, beta_beta_dist, N) * N).astype(int)
+    #     # k_values = np.linspace(1, N, N)
+    #     # k_values = np.linspace(0, 1, N)
+    #
+    #     pdf_values = beta_sci.pdf(k_values, a=alpha_beta_dist,b=beta_beta_dist)
+    #
+    #     # Apply the condition N * pdf_values > 1
+    #     condition = N * pdf_values > 1
+    #
+    #     # Filter k_values and pdf_values based on the condition
+    #     unique_degrees = k_values[condition]
+    #     P_k = pdf_values[condition]
+    #     k_avg = np.sum(P_k*unique_degrees)
     elif net_type=='bd':
         unique_degrees=np.array([kavg*(1-epsilon),kavg*(1+epsilon)])
         P_k =np.array([0.5,0.5])
@@ -81,7 +132,6 @@ def numerical_xstar(kavg,epsilon,correlation,net_type,N,lam):
     #                        for j, k in enumerate(unique_degrees)])
     x_solution = fsolve(equations, x_initial, args=(beta, correlation,unique_degrees,k_avg))
     return x_solution,P_k
-
 
 
 def assortative_rate_equations(vars, R0, alpha, epsilon):
@@ -209,14 +259,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     N = 5000 if args.N is None else args.N
-    prog = 'gam' if args.prog is None else args.prog
+    prog = 'bet' if args.prog is None else args.prog
     lam = 1.3 if args.lam is None else args.lam
     eps_din = 0.5 if args.eps_din is None else args.eps_din
     correlation = 0.3 if args.correlation is None else args.correlation
     k = 50 if args.k is None else args.k
-    fraction = 0.0 if args.fraction is None else args.fraction
+    fraction = 0.9 if args.fraction is None else args.fraction
     num_points_alpha_eps_xstar = 20 if args.num_points_alpha_eps_xstar is None else args.num_points_alpha_eps_xstar
-    alpha,epsilon = np.linspace(-correlation,correlation,num_points_alpha_eps_xstar),np.linspace(0.05,eps_din,num_points_alpha_eps_xstar)
+    alpha,epsilon = np.linspace(-correlation,correlation,num_points_alpha_eps_xstar),np.linspace(0.3,eps_din,num_points_alpha_eps_xstar)
     # lam, alpha, epsilon, fraction = 1.3,np.linspace(10**-6,1.0,num_points_alpha_eps_xstar),np.linspace(10**-6,1.0,num_points_alpha_eps_xstar),0.9
     alpha_filtered, epsilon_filtered = find_constant_infected_fraction(lam, alpha, epsilon, fraction,k,prog,N)
 
