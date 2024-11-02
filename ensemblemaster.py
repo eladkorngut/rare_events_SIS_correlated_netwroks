@@ -9,17 +9,18 @@ if __name__ == '__main__':
 
     # N = [300,400,500,600,700,800,900,1000,1100,1200,1300,1400]
     N = 5000
-    prog = 'ig'
+    prog = 'gam'
     lam = 1.3
     # lam = 1+np.logspace(-2,0,9)
     # lam = np.array([1.5,1.6,1.7,1.8])
-    eps_din = np.random.uniform(0.0, 1.0)
+    measurements = 50
+    eps_din = np.random.uniform(0.0, 1.0,measurements)
     eps_dout = eps_din
     # eps_din = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
     # eps_dout = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
     # correlation = [-0.01,-0.03,-0.05,-0.08,-0.1,-0.12,-0.15,-0.18,-0.2,-0.25,-0.3]
-    correlation = np.random.uniform(-0.8, 0.8)
-    number_of_networks = 20
+    correlation = np.random.uniform(-0.8, 0.8,measurements)
+    number_of_networks = 10
     # k = [50]
     k= 50
 
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     program_path = dir_path + '/runwesim.py'
     loop_over = correlation
 
-    for i,j in (eps_din,correlation):
+    for i,j in zip(eps_din,correlation):
         error_graphs_flag = '--error_graphs' if error_graphs else ''
         run_mc_simulation_flag = '--run_mc_simulation' if run_mc_simulation else ''
         short_flag_flag = False
