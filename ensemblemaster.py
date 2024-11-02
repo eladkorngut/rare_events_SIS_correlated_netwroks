@@ -2,7 +2,6 @@
 
 import os
 import numpy as np
-import const_xstar
 
 if __name__ == '__main__':
 
@@ -14,20 +13,15 @@ if __name__ == '__main__':
     lam = 1.3
     # lam = 1+np.logspace(-2,0,9)
     # lam = np.array([1.5,1.6,1.7,1.8])
-    eps_din = 0.8
-    eps_dout = 0.8
-    #eps_din = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
-    #eps_dout = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
+    eps_din = np.random.uniform(0.0, 1.0)
+    eps_dout = eps_din
+    # eps_din = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
+    # eps_dout = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
     # correlation = [-0.01,-0.03,-0.05,-0.08,-0.1,-0.12,-0.15,-0.18,-0.2,-0.25,-0.3]
-    correlation = 1.0
+    correlation = np.random.uniform(-0.8, 0.8)
     number_of_networks = 20
     # k = [50]
     k= 50
-
-    num_points_alpha_eps_xstar,fraction = 20,0.9
-    alpha,epsilon = np.linspace(-correlation,correlation,num_points_alpha_eps_xstar),np.linspace(0.01,eps_din,num_points_alpha_eps_xstar)
-    alpha_filtered, epsilon_filtered = const_xstar.find_constant_infected_fraction(lam, alpha, epsilon, fraction,k,prog,N)
-
 
     # We simulation parameters
 
@@ -49,11 +43,11 @@ if __name__ == '__main__':
 
     # Paths needed to run the program
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    slurm_path = dir_path +'/slurm.serjob python3'
-    program_path = dir_path +'/runwesim.py'
+    slurm_path = dir_path + '/slurm.serjob python3'
+    program_path = dir_path + '/runwesim.py'
     loop_over = correlation
 
-    for i,j in zip(alpha_filtered,epsilon_filtered):
+    for i,j in (eps_din,correlation):
         error_graphs_flag = '--error_graphs' if error_graphs else ''
         run_mc_simulation_flag = '--run_mc_simulation' if run_mc_simulation else ''
         short_flag_flag = False
@@ -63,4 +57,3 @@ if __name__ == '__main__':
                    f'--new_trajectory_bin {new_trajectory_bin} --relaxation_time {relaxation_time} --x {x} '
                    f'--Alpha {Alpha} {run_mc_simulation_flag}')
         os.system(command)
-
