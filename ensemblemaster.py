@@ -52,8 +52,8 @@ if __name__ == '__main__':
         error_graphs_flag = '--error_graphs' if error_graphs else ''
         run_mc_simulation_flag = '--run_mc_simulation' if run_mc_simulation else ''
         short_flag_flag = False
-        command = (f'{slurm_path} {program_path} --N {N} --prog {prog} --lam {lam} --eps_din {j} '
-                   f'--eps_dout {j} --correlation {i} --number_of_networks {number_of_networks} '
+        command = (f'{slurm_path} {program_path} --N {N} --prog {prog} --lam {lam} --eps_din {i} '
+                   f'--eps_dout {i} --correlation {j} --number_of_networks {number_of_networks} '
                    f'--k {k} {error_graphs_flag} --sims {sims} --tau {tau} --it {it} --jump {jump} '
                    f'--new_trajectory_bin {new_trajectory_bin} --relaxation_time {relaxation_time} --x {x} '
                    f'--Alpha {Alpha} {run_mc_simulation_flag}')
