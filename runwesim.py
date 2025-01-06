@@ -182,6 +182,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
     dir_path = os.path.dirname(os.path.realpath(__file__))
     slurm_path = dir_path +'/slurm.serjob'
     program_path = dir_path +'/cwesis.exe'
+    pgp_path = dir_path +'/PGPgiantcompo.net'
     os.mkdir(foldername)
     os.chdir(foldername)
     data_path = os.getcwd() +'/'
@@ -193,7 +194,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
 
 
         if error_graphs==False:
-            G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation)
+            G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation,pgp_path)
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
@@ -267,7 +268,7 @@ if __name__ == '__main__':
 
     # Default parameters
     N = 10000 if args.N is None else args.N
-    prog = 'norm' if args.prog is None else args.prog
+    prog = 'pgp' if args.prog is None else args.prog
     lam = 1.3 if args.lam is None else args.lam
     eps_din = 0.5 if args.eps_din is None else args.eps_din
     eps_dout = 0.5 if args.eps_dout is None else args.eps_dout

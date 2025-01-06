@@ -18,6 +18,7 @@ from scipy.stats import gamma
 from scipy.stats import uniform
 from scipy.stats import rv_discrete
 import json
+import import_pgp_network as pgp
 
 
 def draw_basic_nx_g(G):
@@ -856,6 +857,27 @@ def plot_gamma_distribution(G,kavg,epsilon,n,net_type):
         title = 'Wald'
     elif net_type=='ln':
         title='Log-norm'
+    elif net_type=='pgp':
+        title='PGP'
+    centrality = nx.eigenvector_centrality(G)
+    nx.eigenvector_centrality(G)
+    centrality = np.array(sorted(centrality.values()))
+
+    bin_size = 50
+    bins = np.arange(0, len(centrality) + bin_size, bin_size)
+    binned_means = [np.mean(centrality[bins[i]:bins[i+1]]) for i in range(len(bins) - 1)]
+    binned_indices = [np.mean([bins[i], bins[i+1]]) for i in range(len(bins) - 1)]
+
+
+    index = range(0, len(centrality))
+    plt.plot(index, centrality)
+    plt.scatter(binned_indices, binned_means, color='red', label="Binned Averages")
+    plt.xlabel('index')
+    plt.ylabel('Centrality')
+    plt.title(r'Centrality for {} with, $\epsilon$={} and N={}'.format(title, round(epsilon,2), n))
+    plt.legend()
+    plt.savefig('centrality_dist_graph_{}_k{}_eps_{}_N{}.png'.format(net_type,round(kavg,1),round(epsilon,2),n), dpi=500)
+    plt.show()
     degree_sequence = sorted((d for n, d in G.degree()), reverse=True)
     hist, edges = np.histogram(degree_sequence, bins=np.arange(1, np.max(degree_sequence)),density=False)
     plt.plot(edges[:-1], hist, 'ro', label='Correlation = {}'.format(round(nx.degree_assortativity_coefficient(G),2)))
@@ -1153,7 +1175,7 @@ def xulvi_brunet_sokolov_target_assortativity(G, target_assortativity, current_a
     return G, current_assortativity
 
 
-def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,correlation_factor):
+def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,correlation_factor,pgp_path):
     k_avg_graph = 0.0
     correlation_graph = 2.0 if correlation_factor!=0 else 0.0
     high_correlation, low_correlation = 1.0, correlation_factor
@@ -1191,6 +1213,9 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         elif net_type=='lap':
             d = (numpy.random.default_rng().laplace(loc=kavg, scale=epsilon*kavg/np.sqrt(2), size=N)).astype(int)
             d = d[d<2*np.mean(d)]
+        elif net_type=='pgp':
+            G = pgp.pgp_read(pgp_path)
+            return G, np.array([G.degree(n) for n in G.nodes()])
 
         # # Remove zeros from d
         # d = d[d != 0]
@@ -1274,6 +1299,6 @@ def jason_graph(file_name):
 
 
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 50,0.5,1000,'gam',-0.1
+    k,epsilon,N,net_type,correlation_factor= 50,0.5,1000,'gam',0.5
     G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
-    # plot_gamma_distribution(G,k,epsilon,N,net_type)
+    plot_gamma_distribution(G,k,epsilon,N,net_type)

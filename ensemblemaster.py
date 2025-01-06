@@ -14,12 +14,12 @@ if __name__ == '__main__':
     # lam = 1+np.logspace(-2,0,9)
     # lam = np.array([1.5,1.6,1.7,1.8])
     measurements = 50
-    eps_din = np.random.uniform(0.0, 1.0,measurements)
+    eps_din = np.random.uniform(0.0, 3.0,measurements)
     eps_dout = eps_din
     # eps_din = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
     # eps_dout = [0.01,0.04,0.06,0.08,0.1,0.14,0.18,0.2,0.25,0.3,0.4,0.5,0.6]
     # correlation = [-0.01,-0.03,-0.05,-0.08,-0.1,-0.12,-0.15,-0.18,-0.2,-0.25,-0.3]
-    correlation = np.random.uniform(-0.8, 0.8,measurements)
+    correlation = np.random.uniform(-0.6, 0.6,measurements)
     number_of_networks = 10
     # k = [50]
     k= 50
