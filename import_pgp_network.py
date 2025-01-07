@@ -1,4 +1,5 @@
 import networkx as nx
+import pickle
 
 # Function to parse the vertices and edges
 def pgp_read(file_path):
@@ -44,3 +45,7 @@ def pgp_read(file_path):
     return graph
     # Display basic graph information
     # nx.info(graph)
+if __name__=='__main__':
+    G = pgp_read('./PGPgiantcompo.net')
+    with open('PGPgiantcompo.nx', 'wb') as f:
+        pickle.dump(G, f, pickle.HIGHEST_PROTOCOL)

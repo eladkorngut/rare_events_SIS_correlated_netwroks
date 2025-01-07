@@ -194,7 +194,12 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
 
 
         if error_graphs==False:
-            G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation,pgp_path)
+            if prog !='pgp':
+                G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation,pgp_path)
+            else:
+                with open(dir_path +'/PGPgiantcompo.nx', 'rb') as f:
+                    G = pickle.load(f)
+                    graph_degrees = np.array([G.degree(n) for n in G.nodes()])
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
@@ -278,7 +283,7 @@ if __name__ == '__main__':
     error_graphs = args.error_graphs
 
     sims = 500 if args.sims is None else args.sims
-    tau = 1.0 if args.tau is None else args.tau
+    tau = 0.5 if args.tau is None else args.tau
     it = 70 if args.it is None else args.it
     jump = 1 if args.jump is None else args.jump
     new_trajectory_bin = 2 if args.new_trajectory_bin is None else args.new_trajectory_bin
