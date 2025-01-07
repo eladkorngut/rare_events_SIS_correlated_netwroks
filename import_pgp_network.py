@@ -39,9 +39,11 @@ def pgp_read(file_path):
             if reading_edges:
                 try:
                     u, v = map(int, line.split()[:2])
-                    graph.add_edge(u, v)
+                    graph.add_edge(u-1, v-1)
                 except ValueError:
                     continue
+    graph = nx.Graph(graph)
+    graph.remove_edges_from(nx.selfloop_edges(graph))
     return graph
     # Display basic graph information
     # nx.info(graph)

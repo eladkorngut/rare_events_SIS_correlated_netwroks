@@ -194,9 +194,11 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
 
 
         if error_graphs==False:
-            if prog !='pgp':
-                with open(dir_path +'/PGPgiantcompo.nx', 'rb') as f:
-                    G = pickle.load(f)
+            if prog =='pgp':
+                G, graph_degrees,N = rand_networks.configuration_model_undirected_graph_mulit_type(float(k),
+                                                                                                 float(eps_din), int(N),
+                                                                                                 prog, correlation,
+                                                                                                 pgp_path)
                 graph_degrees = np.array([G.degree(n) for n in G.nodes()])
             else:
                 G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation,pgp_path)
@@ -272,13 +274,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Default parameters
-    N = 10000 if args.N is None else args.N
+    N = 10680 if args.N is None else args.N
     prog = 'pgp' if args.prog is None else args.prog
-    lam = 1.3 if args.lam is None else args.lam
+    lam = 3.0 if args.lam is None else args.lam
     eps_din = 0.5 if args.eps_din is None else args.eps_din
     eps_dout = 0.5 if args.eps_dout is None else args.eps_dout
     correlation = 0.3 if args.correlation is None else args.correlation
-    number_of_networks = 5 if args.number_of_networks is None else args.number_of_networks
+    number_of_networks = 1 if args.number_of_networks is None else args.number_of_networks
     k = 50 if args.k is None else args.k
     error_graphs = args.error_graphs
 

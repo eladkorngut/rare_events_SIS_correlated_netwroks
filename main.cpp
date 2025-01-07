@@ -707,9 +707,13 @@ int find_new_min(std::list<int>& num_inf,int new_trajectory_bin){
 }
 
 int main(int argc, char* argv[]) {
-    std::string filename_in("/home/elad/we_sis_networks_extinction_cpp/Adjin_0.txt"),
-    filename_out("/home/elad/we_sis_networks_extinction_cpp/Adjout_0.txt"),
-    parametersname("/home/elad/we_sis_networks_extinction_cpp/cparameters_0.txt");
+//    std::string filename_in("/home/elad/we_sis_networks_extinction_cpp/Adjin_0.txt"),
+//    filename_out("/home/elad/we_sis_networks_extinction_cpp/Adjout_0.txt"),
+//    parametersname("/home/elad/we_sis_networks_extinction_cpp/cparameters_0.txt");
+    std::string filename_in("/home/elad/correlated_netwroks_project/code/Adjin_0.txt"),
+            filename_out("/home/elad/correlated_netwroks_project/code/Adjout_0.txt"),
+            parametersname("/home/elad/correlated_netwroks_project/code/cparameters_0.txt");
+
     if (argc>1){
         filename_in=argv[1];
         filename_out=argv[2];

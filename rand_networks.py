@@ -1215,7 +1215,7 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             d = d[d<2*np.mean(d)]
         elif net_type=='pgp':
             G = pgp.pgp_read(pgp_path)
-            return G, np.array([G.degree(n) for n in G.nodes()])
+            return G, np.array([G.degree(n) for n in G.nodes()]),G.number_of_nodes()
 
         # # Remove zeros from d
         # d = d[d != 0]
