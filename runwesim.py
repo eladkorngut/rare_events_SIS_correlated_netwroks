@@ -195,11 +195,11 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
 
         if error_graphs==False:
             if prog !='pgp':
-                G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation,pgp_path)
-            else:
                 with open(dir_path +'/PGPgiantcompo.nx', 'rb') as f:
                     G = pickle.load(f)
-                    graph_degrees = np.array([G.degree(n) for n in G.nodes()])
+                graph_degrees = np.array([G.degree(n) for n in G.nodes()])
+            else:
+                G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k), float(eps_din),int(N), prog,correlation,pgp_path)
             k_avg_graph, graph_std, graph_skewness = np.mean(graph_degrees), np.std(graph_degrees), skew(graph_degrees)
             second_moment, third_moment = np.mean((graph_degrees) ** 2), np.mean((graph_degrees) ** 3)
             eps_graph = graph_std / k_avg_graph
