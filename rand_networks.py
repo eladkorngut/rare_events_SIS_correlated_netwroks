@@ -1216,6 +1216,9 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
         elif net_type=='pgp':
             G = pgp.pgp_read(pgp_path)
             return G, np.array([G.degree(n) for n in G.nodes()]),G.number_of_nodes()
+        elif net_type=='gampgp':
+            theta, shape, k_avg_graph = epsilon ** 2 * kavg, 1 / epsilon ** 2, 0.0
+            d = (numpy.random.default_rng().gamma(shape, theta, N)).astype(int)
 
         # # Remove zeros from d
         # d = d[d != 0]
@@ -1225,13 +1228,13 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             if np.sum(d)%2!=0:
                 d[int(len(d)*np.random.random())]+=1
 
-        if correlation_factor>0 and net_type!='bd':
+        if correlation_factor>0 and net_type!='bd' and net_type!='gampgp':
             d, correlated_nodes = create_correlation(d, mid_correlation)
         G = nx.configuration_model(d) if net_type!='bd' else G
         G = nx.Graph(G)
 
         # Add correlated edges to the graph
-        if correlation_factor > 0 and net_type!='bd':
+        if correlation_factor > 0 and net_type!='bd' and net_type!='gampgp':
             G.add_edges_from(correlated_nodes)
 
         G.remove_edges_from(nx.selfloop_edges(G))
@@ -1245,7 +1248,7 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             high_correlation = mid_correlation
         mid_correlation = (high_correlation+low_correlation)/2
 
-        if correlation_factor<0:
+        if correlation_factor<0 or net_type=='gampgp':
             G, correlation_graph=xulvi_brunet_sokolov_target_assortativity(G,correlation_factor,correlation_graph,0.05,1000000)
             if np.abs(kavg-k_avg_graph)/kavg>0.05:
                 return G, np.array([G.degree(n) for n in G.nodes()])

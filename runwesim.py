@@ -183,6 +183,7 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
     slurm_path = dir_path +'/slurm.serjob'
     program_path = dir_path +'/cwesis.exe'
     pgp_path = dir_path +'/PGPgiantcompo.net'
+    org_path = os.getcwd()
     os.mkdir(foldername)
     os.chdir(foldername)
     data_path = os.getcwd() +'/'
@@ -239,6 +240,27 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
             os.system(dir_path + '/slurm.serjob python3 ' + dir_path + '/gillespierunhomo.py ' + str(prog_mc) + ' ' +
                       str(Alpha) + ' ' + str(bank) + ' ' + str(outfile) + ' ' + str(infile) + ' ' + str(
                 Num_inital_conditions) + ' ' + str(Num_inf) + ' ' + str(i) + ' ' + str(Beta))
+        elif syntetic==True and prog=='pgp':
+            G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k_avg_graph), float(eps_graph),
+                                                                                             int(N), 'gampgp', graph_correlation,
+                                                                                             pgp_path)
+            os.chdir(org_path)
+            os.mkdir(foldername +'_gam')
+            os.chdir(foldername +'_gam')
+            np.save('parameters_{}.npy'.format(i), parameters)
+            np.save('largest_eigen_vector_{}.npy'.format(i), largest_eigen_vector)
+            np.save('largest_eigenvalue_{}.npy'.format(i), largest_eigenvalue[0])
+            np.save(f'mean_shortest_path_length_{i}.npy',mean_shortest_path_length)
+            infile = 'GNull_{}.pickle'.format(i)
+            with open(infile,'wb') as f:
+                pickle.dump(G,f,pickle.HIGHEST_PROTOCOL)
+            export_network_to_csv(G, i)
+            export_parameters_to_csv(parameters,i)
+            path_adj_in = data_path + 'Adjin_{}.txt'.format(i)
+            path_adj_out = data_path + 'Adjout_{}.txt'.format(i)
+            path_parameters = data_path + 'cparameters_{}.txt'.format(i)
+            parameters_path ='{} {} {}'.format(path_adj_in,path_adj_out,path_parameters)
+            os.system('{} {} {}'.format(slurm_path,program_path,parameters_path))
 
         # os.system('{} {} {} {}'.format(program_path,path_adj_in,path_adj_out,path_parameters))
 
@@ -276,7 +298,7 @@ if __name__ == '__main__':
     # Default parameters
     N = 10680 if args.N is None else args.N
     prog = 'pgp' if args.prog is None else args.prog
-    lam = 3.0 if args.lam is None else args.lam
+    lam = 2.0 if args.lam is None else args.lam
     eps_din = 0.5 if args.eps_din is None else args.eps_din
     eps_dout = 0.5 if args.eps_dout is None else args.eps_dout
     correlation = 0.3 if args.correlation is None else args.correlation
@@ -298,6 +320,7 @@ if __name__ == '__main__':
     run_mc_simulation = args.run_mc_simulation
     # run_mc_simulationtion = True
     short_path = False
+    syntetic = True
 
 
     parameters = np.array([N, sims, it, k, x, lam, jump, Num_inf, Alpha, number_of_networks, tau, eps_din, eps_dout, new_trajectory_bin, prog, Beta_avg, error_graphs, correlation])
