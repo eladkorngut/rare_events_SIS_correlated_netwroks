@@ -19,6 +19,7 @@ from scipy.stats import uniform
 from scipy.stats import rv_discrete
 import json
 import import_pgp_network as pgp
+import os
 
 
 def draw_basic_nx_g(G):
@@ -894,6 +895,20 @@ def plot_gamma_distribution(G,kavg,epsilon,n,net_type):
     plt.savefig('degree_dist_graph_{}_k{}_eps_{}_N{}.png'.format(net_type,round(kavg,1),round(epsilon,2),n), dpi=500)
     plt.show()
 
+
+def plot_pgp_distribution(G_pgp,G_gamma):
+    degree_sequence_pgp,degree_sequence_gam = sorted((d for n, d in G_pgp.degree()), reverse=True),sorted((d for n, d in G_gamma.degree()), reverse=True)
+    hist_pgp, edges_pgp = np.histogram(degree_sequence_pgp, bins=np.arange(1, np.max(degree_sequence_pgp)), density=False)
+    hist_gam, edges_gam = np.histogram(degree_sequence_gam, bins=np.arange(1, np.max(degree_sequence_gam)), density=False)
+    plt.plot(edges_pgp[:-1], hist_pgp, 'ro', label='Network <k>={}'.format(np.mean(degree_sequence)),markersize=8)
+    plt.plot(edges_gam[:-1], hist_gam, 'bv', label='Network <k>={}'.format(np.mean(degree_sequence)),markersize=8)
+    plt.xlabel('k',fontsize=26)
+    plt.ylabel('P(k)',fontsize=26)
+    plt.tick_params(axis='both', which='major', labelsize=23)
+    plt.yscale('log')
+    plt.savefig('degree_dist_graph.png', dpi=500)
+    plt.show()
+
 def find_a_binary_search(kavg, n, a):
     class CustomDistribution(rv_discrete):
         def _pmf(self, k, a, b):
@@ -1193,7 +1208,7 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             d = (numpy.random.lognormal(mu_log_norm,sigma_log_norm,N)).astype(int)
         elif net_type=='gam':
             theta, shape, k_avg_graph = epsilon ** 2 * kavg, 1 / epsilon ** 2, 0.0
-            d = (numpy.random.default_rng().gamma(shape, theta, N)).astype(int)
+            d = np.ceil((numpy.random.default_rng().gamma(shape, theta, N))).astype(int)
         elif net_type=='h':
             d = np.full(N, kavg).astype(int)
         elif net_type=='bd':
@@ -1300,8 +1315,18 @@ def jason_graph(file_name):
     G.add_edges_from(edges)
     return G
 
-
 if __name__ == '__main__':
-    k,epsilon,N,net_type,correlation_factor= 50,0.5,1000,'gam',0.5
-    G,degree_sequence = configuration_model_undirected_graph_mulit_type(k,epsilon,N,net_type,correlation_factor)
-    plot_gamma_distribution(G,k,epsilon,N,net_type)
+    k,epsilon,N,net_type,correlation_factor= 50,0.5,1000,'gampgp',0.5
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    pgp_path = dir_path + '/PGPgiantcompo.net'
+    graph_pgp = pgp.pgp_read(pgp_path)
+    graph_degrees = np.array([graph_pgp.degree(n) for n in graph_pgp.nodes()])
+
+    N = graph_pgp.number_of_nodes()
+    k_avg_graph, graph_std = np.mean(graph_degrees), np.std(graph_degrees)
+    eps_graph = graph_std / k_avg_graph
+    graph_correlation = nx.degree_assortativity_coefficient(graph_pgp)
+
+    G,degree_sequence = configuration_model_undirected_graph_mulit_type(k_avg_graph,eps_graph,N,net_type,graph_correlation,pgp_path)
+    # plot_gamma_distribution(G,k,epsilon,N,net_type)
+    plot_pgp_distribution(graph_pgp,G)

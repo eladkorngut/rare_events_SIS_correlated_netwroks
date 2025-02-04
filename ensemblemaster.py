@@ -8,11 +8,12 @@ if __name__ == '__main__':
     # Netwrok parameters
 
     # N = [300,400,500,600,700,800,900,1000,1100,1200,1300,1400]
-    N = 5000
+    N = 10680
     prog = 'pgp'
     # lam = 1.3
     # lam = 1+np.logspace(-2,0,9)
-    lam = [1.1,1.2,1.3,1.4,1.5]
+    # lam = [1.1,1.2,1.3,1.4,1.5]
+    lam = np.linspace(1.01, 3.0, 100)
     measurements = 50
     eps_din = 0.1
     # eps_din = np.random.uniform(0.0, 3.0,measurements)
