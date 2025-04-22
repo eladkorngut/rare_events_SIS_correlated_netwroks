@@ -8,6 +8,41 @@ from scipy.stats import skew
 from scipy.sparse.linalg import eigsh
 import netinithomo
 import argparse
+import matplotlib.pyplot as plt
+import import_pgp_network as pgp
+from scipy.stats import gamma
+
+
+def plot_pgp_distribution(G_pgp,G_gamma,ax,N):
+    degree_sequence_pgp,degree_sequence_gam = sorted((d for n, d in G_pgp.degree()), reverse=True),sorted((d for n, d in G_gamma.degree()), reverse=True)
+    hist_pgp, edges_pgp = np.histogram(degree_sequence_pgp, bins=np.arange(1, np.max(degree_sequence_pgp)), density=False)
+    hist_gam, edges_gam = np.histogram(degree_sequence_gam, bins=np.arange(1, np.max(degree_sequence_gam)), density=False)
+    ax.plot(edges_pgp[:-1], hist_pgp / np.sum(hist_pgp), 'ro', label='Network <k>={}'.format(np.mean(degree_sequence_pgp)),markersize=15)
+    ax.plot(edges_gam[:-1], hist_gam / np.sum(hist_gam), 'bv', label='Network <k>={}'.format(np.mean(degree_sequence_gam)),markersize=15)
+    ax.set_xlabel('k',fontsize=15)
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    ax.set_xlim([0.7, 200])
+    ax.set_ylim([5*10**(-5), 1.0])
+    possible_degrees = range(0,max(degree_sequence_gam))
+    kavg, theory_std = np.mean(degree_sequence_gam), np.std(degree_sequence_gam)
+    epsilon = theory_std / kavg
+    gamma_theory = (gamma.pdf(possible_degrees, a=1 / epsilon ** 2, scale=epsilon ** 2 * kavg)*N)
+    ax.set_xlabel(r'$k$', fontsize=26)
+    ax.set_ylabel(r'$P(k)$', fontsize=26)
+    ax.tick_params(axis='both', which='major', labelsize=23)
+    ax.plot(possible_degrees,gamma_theory/np.sum(gamma_theory[1:]),'--k',label='Theory',linewidth=7)
+
+
+def plot_degree_distribution(G, G_gamma,ax):
+    # k,epsilon,N,net_type,correlation_factor= 50,0.5,1000,'gampgp',0.5
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    pgp_path = dir_path + '/PGPgiantcompo.net'
+    graph_pgp = pgp.pgp_read(pgp_path)
+    N = graph_pgp.number_of_nodes()
+    ax = plot_pgp_distribution(G,G_gamma,ax,N)
+    return ax
+
 
 
 def export_parameters_to_csv(parameters,network_number):
@@ -192,8 +227,6 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
         int(N), int(sims), int(it), float(k), float(x), float(lam), float(jump), int(Num_inf), float(Alpha), int(number_of_networks),\
         float(tau), float(eps_din), float(eps_dout),int(new_trajcetory_bin), prog, float(Beta_avg), float(correlation)
     for i in range(int(number_of_networks)):
-
-
         if error_graphs==False:
             if prog =='pgp':
                 G, graph_degrees,N = rand_networks.configuration_model_undirected_graph_mulit_type(float(k),
@@ -241,20 +274,24 @@ def job_to_cluster(foldername,parameters,Istar,error_graphs,run_mc_simulation,sh
                       str(Alpha) + ' ' + str(bank) + ' ' + str(outfile) + ' ' + str(infile) + ' ' + str(
                 Num_inital_conditions) + ' ' + str(Num_inf) + ' ' + str(i) + ' ' + str(Beta))
         elif syntetic==True and prog=='pgp':
-            G, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k_avg_graph), float(eps_graph),
+            G_gamma, graph_degrees = rand_networks.configuration_model_undirected_graph_mulit_type(float(k_avg_graph), float(eps_graph),
                                                                                              int(N), 'gampgp', graph_correlation,
                                                                                              pgp_path)
+            fig_extinction, ax_quasi = plt.subplots(1, 1, figsize=(12, 6), constrained_layout=True)
+            plot_degree_distribution(G, G_gamma,ax_quasi)
+            fig_extinction.savefig(f'degree_distribution{i}.png', dpi=200)
+            plt.show()
             os.chdir(org_path)
-            os.mkdir(foldername +'_gam')
-            os.chdir(foldername +'_gam')
+            os.mkdir(foldername +'_gam_{}'.format(i))
+            os.chdir(foldername +'_gam_{}'.format(i))
             np.save('parameters_{}.npy'.format(i), parameters)
             np.save('largest_eigen_vector_{}.npy'.format(i), largest_eigen_vector)
             np.save('largest_eigenvalue_{}.npy'.format(i), largest_eigenvalue[0])
             np.save(f'mean_shortest_path_length_{i}.npy',mean_shortest_path_length)
             infile = 'GNull_{}.pickle'.format(i)
             with open(infile,'wb') as f:
-                pickle.dump(G,f,pickle.HIGHEST_PROTOCOL)
-            export_network_to_csv(G, i)
+                pickle.dump(G_gamma,f,pickle.HIGHEST_PROTOCOL)
+            export_network_to_csv(G_gamma, i)
             export_parameters_to_csv(parameters,i)
             path_adj_in = data_path + 'Adjin_{}.txt'.format(i)
             path_adj_out = data_path + 'Adjout_{}.txt'.format(i)
@@ -302,9 +339,10 @@ if __name__ == '__main__':
     eps_din = 0.5 if args.eps_din is None else args.eps_din
     eps_dout = 0.5 if args.eps_dout is None else args.eps_dout
     correlation = 0.3 if args.correlation is None else args.correlation
-    number_of_networks = 1 if args.number_of_networks is None else args.number_of_networks
+    number_of_networks = 5 if args.number_of_networks is None else args.number_of_networks
     k = 50 if args.k is None else args.k
     error_graphs = args.error_graphs
+
 
     sims = 500 if args.sims is None else args.sims
     tau = 0.5 if args.tau is None else args.tau

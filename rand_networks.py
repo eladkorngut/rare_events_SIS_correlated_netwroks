@@ -905,6 +905,7 @@ def plot_pgp_distribution(G_pgp,G_gamma):
     plt.xlabel('k',fontsize=26)
     plt.ylabel('P(k)',fontsize=26)
     plt.tick_params(axis='both', which='major', labelsize=23)
+    plt.xscale('log')
     plt.yscale('log')
     plt.savefig('degree_dist_graph.png', dpi=500)
     plt.show()
@@ -1233,8 +1234,7 @@ def configuration_model_undirected_graph_mulit_type(kavg,epsilon,N,net_type,corr
             return G, np.array([G.degree(n) for n in G.nodes()]),G.number_of_nodes()
         elif net_type=='gampgp':
             theta, shape, k_avg_graph = epsilon ** 2 * kavg, 1 / epsilon ** 2, 0.0
-            d = (numpy.random.default_rng().gamma(shape, theta, N)).astype(int)
-
+            d = np.ceil((numpy.random.default_rng().gamma(shape, theta, N))).astype(int)
         # # Remove zeros from d
         # d = d[d != 0]
         # Replace zeros with ones
